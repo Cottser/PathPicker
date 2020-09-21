@@ -178,7 +178,7 @@ def appendAliasExpansion():
     #
     # so here we must ask bash to turn on alias expansion.
     shell = os.environ.get('SHELL')
-    if 'fish' not in shell:
+    if 'fish' not in shell and 'elvish' not in shell:
         appendToFile("""
 if type shopt > /dev/null; then
   shopt -s expand_aliases
@@ -209,6 +209,10 @@ def appendExit():
     # not the current shell. But they are often the same. And there
     # is no other simple and reliable way to detect the current shell.
     shell = os.environ['SHELL']
+    # ``elvish`` throws an exception and interrupts the flow of execution,
+    # so no need to return the status of the previous command.
+    if shell.endswith('elvish'):
+        return
     # ``csh``, fish`` and, ``rc`` uses ``$status`` instead of ``$?``.
     if shell.endswith('csh') or shell.endswith('fish') or shell.endswith('rc'):
         exit_status = '$status'

@@ -48,19 +48,21 @@ function doProgram {
   # execute the output bash script. For zsh or bash
   # shells, we delegate to $SHELL, but for all others
   # (fish, csh, etc) we delegate to bash.
+  # For elvish shell, we always remove the -i flag.
   #
   # We use the following heuristics from
   # http://stackoverflow.com/questions/3327013/
   # in order to determine which shell we are on
-  if [ -n "$BASH" -o -n "$ZSH_NAME" ]; then
-    if [ -e "${SHELL}" ]; then
-      $SHELL $IFLAG "$FPP_DIR/.fpp.sh" < /dev/tty
-    else
-      (>&2 echo "Your SHELL bash variable ${SHELL} does not exist, please export it explicitly");
-      $BASH $IFLAG "$FPP_DIR/.fpp.sh" < /dev/tty
-    fi
+  if ! [ -e "${SHELL}" ]; then
+    (>&2 echo "Your SHELL bash variable ${SHELL} does not exist, please export it explicitly");
+    $BASH $IFLAG "$FPP_DIR/.fpp.sh" < /dev/tty
   else
-    /bin/bash $IFLAG "$FPP_DIR/.fpp.sh" < /dev/tty
+    case "$SHELL" in
+      *zsh|*bash) $SHELL $IFLAG "$FPP_DIR/.fpp.sh" < /dev/tty;;
+      # For elvish, don't pass the -i flag.
+      *elvish) $SHELL "$FPP_DIR/.fpp.sh" < /dev/tty;;
+      *) /bin/bash $IFLAG "$FPP_DIR/.fpp.sh" < /dev/tty
+    esac
   fi
 }
 
